@@ -182,8 +182,10 @@ export default function Home() {
           <p className="mb-2">
             Check out the{" "}
             <a
-              href="https://github.com/yourusername/stripe-connect-deferred-onboarding-example-repo"
+              href="https://github.com/razz1000/stripe-connect-deferred-onboarding-example-repo"
               className="text-blue-600 hover:text-blue-800 font-semibold"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               GitHub Repository
             </a>
