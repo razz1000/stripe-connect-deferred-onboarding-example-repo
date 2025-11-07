@@ -212,7 +212,7 @@ Visit `http://localhost:3000` to see the example in action.
 
 ## YouTube Video
 
-This example is based on the tutorial: [Stripe Connect Deferred Onboarding Tutorial](https://youtube.com/...)
+This example is based on the tutorial: [Stripe Connect Deferred Onboarding Tutorial](https://www.youtube.com/watch?v=OVfEeuCt-kI)
 
 **Timeline:**
 - 00:00 - Why deferred onboarding improves retention
