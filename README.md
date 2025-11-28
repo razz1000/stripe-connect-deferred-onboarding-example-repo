@@ -227,6 +227,59 @@ This example is based on the tutorial: [Stripe Connect Deferred Onboarding Tutor
 - [Express Accounts](https://stripe.com/docs/connect/express-accounts)
 - [Account Capabilities](https://stripe.com/docs/connect/account-capabilities)
 
+## Frequently Asked Questions
+
+### After users have onboarded, how do you manage the flow of funds?
+
+**It depends on the seller's verification status.** This repo uses both approaches:
+
+#### For Unverified Sellers (before full onboarding):
+- Platform creates the charge and **holds the funds** (unverified accounts can't receive transfers yet)
+- Tracks the seller's portion via `seller_amount` in payment metadata
+- Accumulates earnings in `pendingEarnings` in the database
+- After seller completes onboarding → transfers accumulated funds via `stripe.transfers.create()`
+
+```javascript
+// Unverified: Platform holds payment
+payment_intent_data: {
+  metadata: {
+    payment_type: "platform_held",
+    seller_amount: sellerAmount.toString(),
+    transfer_when_ready: "true",
+  },
+}
+```
+
+#### For Verified Sellers (after onboarding):
+- Uses **destination charges** with `transfer_data: { destination: sellerAccountId }`
+- Funds go directly to the connected account immediately
+- Platform takes its fee via `application_fee_amount`
+
+```javascript
+// Verified: Direct transfer to seller
+payment_intent_data: {
+  application_fee_amount: platformFeeAmount,
+  transfer_data: {
+    destination: sellerStripeAccountId,
+  },
+}
+```
+
+**Key code location:** [`src/app/api/create-deferred-payment/route.ts`](src/app/api/create-deferred-payment/route.ts)
+
+### Why hold funds for unverified sellers instead of using destination charges?
+
+Unverified Express accounts don't have the `transfers` capability active yet. Stripe won't allow you to transfer funds to them until they complete onboarding and identity verification. By holding funds on the platform, you can:
+1. Let sellers start accepting payments immediately
+2. Keep funds safe until the seller is verified
+3. Transfer everything at once when they complete onboarding
+
+### When do pending earnings get transferred?
+
+The `account.updated` webhook detects when a seller completes onboarding (`charges_enabled: true` and `transfers` capability becomes `active`). At that point, the webhook handler automatically transfers all `pendingEarnings` to the seller's account.
+
+See [`src/app/api/webhooks/stripe/route.ts`](src/app/api/webhooks/stripe/route.ts) for the implementation.
+
 ## Questions?
 
 If you have questions about implementing deferred onboarding, please open an issue or reach out!
