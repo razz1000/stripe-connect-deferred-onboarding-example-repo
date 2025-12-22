@@ -280,6 +280,29 @@ The `account.updated` webhook detects when a seller completes onboarding (`charg
 
 See [`src/app/api/webhooks/stripe/route.ts`](src/app/api/webhooks/stripe/route.ts) for the implementation.
 
+## Production Considerations
+
+> ⚠️ **This repo is a demonstration of the deferred onboarding pattern, not a production-ready implementation.** Before going live, consider these additional safeguards:
+
+### Risk Management (Platform-Held Phase)
+
+Since the platform holds funds before seller onboarding, you bear the chargeback/dispute risk:
+
+- **Volume caps**: Limit sales count or total $ before requiring onboarding
+- **Transfer delay**: Wait 7-14 days after onboarding before transferring funds (dispute window)
+- **Refund controls**: Keep refunds platform-controlled until seller is verified
+
+### Post-Onboarding Risk
+
+With destination charges, the connected account covers disputes from their balance. However:
+- If their balance goes negative, you may be liable
+- Consider Stripe's [negative balance liability settings](https://stripe.com/docs/connect/account-balances)
+- For high-risk sellers, consider reserves or delayed payouts
+
+### The 3-Sale Threshold
+
+The repo uses 3 sales to trigger onboarding prompts—this is for **UX demonstration**, not risk management. Adjust based on your risk tolerance.
+
 ## Questions?
 
 If you have questions about implementing deferred onboarding, please open an issue or reach out!
