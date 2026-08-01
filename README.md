@@ -307,12 +307,11 @@ The repo uses 3 sales to trigger onboarding prompts—this is for **UX demonstra
 
 If you have questions about implementing deferred onboarding, please open an issue or reach out!
 
-For direct inquiries, contact: [rasmus@speedbuildmarketplace.com](mailto:rasmus@speedbuildmarketplace.com)
+For direct inquiries, contact: [rasmus@prometora.com](mailto:rasmus@prometora.com)
 
 ## Related Projects
 
-- **[Speed Build Marketplace](https://speedbuildmarketplace.com)** - Complete marketplace boilerplate with Stripe Connect integration
-- **[Prometora](https://prometora.com)** - Prompt your marketplace fast
+- **[Prometora](https://prometora.com)** - The marketplace builder that takes you from idea to first transactions in days.
 
 ## License
 
