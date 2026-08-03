@@ -14,7 +14,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder"
 export async function POST(request: NextRequest) {
   try {
     await connectMongo();
-    const { userId, email, firstName, lastName, country } =
+    const { userId, email, firstName, lastName, country, marketplaceUrl, marketplaceName } =
       await request.json();
 
     console.log("Creating deferred Express account for user:", userId);
@@ -80,9 +80,14 @@ export async function POST(request: NextRequest) {
         },
 
         // Business profile (required for Express accounts)
+        // Prefilling the marketplace URL + description removes the "Your website"
+        // and "What do you sell?" questions from Stripe's onboarding form
         business_profile: {
-          product_description: "Online marketplace sales",
-          mcc: "5699", // Miscellaneous specialty retail
+          ...(marketplaceUrl && { url: marketplaceUrl }),
+          product_description: marketplaceName
+            ? `Products and services sold via ${marketplaceName}, an online marketplace.`
+            : "Online marketplace sales",
+          mcc: "5734", // Generic code, nominal here - see README "Prefill" section
         },
 
         // KEY: Set manual payouts until full onboarding complete

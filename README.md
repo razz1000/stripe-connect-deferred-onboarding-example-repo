@@ -106,6 +106,62 @@ const transfer = await stripe.transfers.create({
 });
 ```
 
+## Prefill Everything You Already Know
+
+Deferred onboarding decides **when** sellers see Stripe's form. Prefilling decides **how much** form is left. Stripe generates the onboarding form from whatever is still missing on the account — every field you pass at creation time is a question the seller never sees.
+
+By the time someone becomes a seller, your platform already knows most of the answers: their name, email, and country (from signup), what they sell (they sell on your marketplace), and their website (your marketplace's storefront). Pass all of it:
+
+```javascript
+const account = await stripe.accounts.create({
+  type: "express",
+  country: country,
+  email: email,
+  business_type: "individual", // Kills the "business or individual?" question
+  individual: {
+    first_name: firstName, // From your signup data
+    last_name: lastName,
+    email: email,
+    address: { country: country },
+  },
+  business_profile: {
+    url: marketplaceUrl, // The MARKETPLACE storefront - the honest answer to "Your website"
+    product_description: `Products and services sold via ${marketplaceName}, an online marketplace.`,
+    mcc: "5734", // Generic code; see note below
+  },
+  capabilities: {
+    card_payments: { requested: true },
+    transfers: { requested: true },
+  },
+  settings: {
+    payouts: { schedule: { interval: "manual" } },
+  },
+  metadata: { onboarding_type: "deferred" },
+});
+```
+
+Which question each field removes:
+
+| Field | Onboarding question it removes |
+|---|---|
+| `business_type: "individual"` | "Are you a business or an individual?" |
+| `individual.first_name` / `last_name` | Legal name |
+| `email` / `individual.email` | Email address |
+| `country` / `individual.address.country` | Country |
+| `business_profile.url` | "Your website" |
+| `business_profile.product_description` | "What do you sell?" |
+| `business_profile.mcc` | Industry / category |
+
+**The payoff:** combined with deferred onboarding, sellers hit Stripe's form when they're motivated (they have pending earnings waiting) AND the form is a near-confirmation step — the only things left are the two things your platform genuinely cannot answer: the seller's identity documents and their bank account.
+
+**A note on the MCC:** in this repo's model the platform is the merchant of record on every charge, so the MCC is nominal — it exists to suppress the onboarding question, not to categorize the seller. Platforms that need accurate per-seller categorization should set it per seller.
+
+**The website prefill is honest, not a trick:** the seller genuinely sells ON the marketplace, and Stripe derives the statement descriptor from the URL.
+
+**EU caveat:** platforms based in France (and certain other PSD2 countries) cannot pass seller identity inline from the server — they must create the account with a client-side [account token](https://docs.stripe.com/connect/account-tokens), and Stripe's onboarding collects the personal details directly from the seller.
+
+Using Stripe's newer Accounts v2 API? See [`examples/accounts-v2-prefill.ts`](examples/accounts-v2-prefill.ts) for the same prefill expressed in v2, including a v1 → v2 field mapping.
+
 ## Implementation Guide
 
 ### Required Environment Variables
@@ -226,6 +282,7 @@ This example is based on the tutorial: [Stripe Connect Deferred Onboarding Tutor
 - [Stripe Connect Docs](https://stripe.com/docs/connect)
 - [Express Accounts](https://stripe.com/docs/connect/express-accounts)
 - [Account Capabilities](https://stripe.com/docs/connect/account-capabilities)
+- [Stripe for Marketplaces Guide](https://www.prometora.com/learn/stripe-for-marketplaces)
 
 ## Frequently Asked Questions
 
